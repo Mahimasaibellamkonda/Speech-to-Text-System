@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Speech-to-Text System</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Speech-to-Text System</h1>
+
+        <p class="subtitle">
+            Speak into your microphone and convert speech into text.
+        </p>
+
+
+        <div class="controls">
+
+            <button id="startBtn">
+                Start Recording
+            </button>
+
+            <button id="stopBtn" disabled>
+                Stop Recording
+            </button>
+
+        </div>
+
+
+        <p id="status">
+            Ready to record
+        </p>
+
+
+        <textarea
+            id="output"
+            placeholder="Your speech will appear here..."
+            readonly
+        ></textarea>
+
+
+        <button id="clearBtn" class="clear-button">
+            Clear Text
+        </button>
+
+    </div>
+
+
+    <script>
+
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const clearBtn = document.getElementById("clearBtn");
+
+        const output = document.getElementById("output");
+        const status = document.getElementById("status");
+
+
+        const SpeechRecognition =
+            window.SpeechRecognition ||
+            window.webkitSpeechRecognition;
+
+
+        let recognition;
+
+
+        if (!SpeechRecognition) {
+
+            status.textContent =
+                "Speech recognition is not supported in this browser.";
+
+            startBtn.disabled = true;
+
+        } else {
+
+            recognition = new SpeechRecognition();
+
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = "en-US";
+
+
+            recognition.onstart = function () {
+
+                status.textContent =
+                    "Listening... Speak now.";
+
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+
+            };
+
+
+            recognition.onresult = function (event) {
+
+                let transcript = "";
+
+                for (
+                    let i = event.resultIndex;
+                    i < event.results.length;
+                    i++
+                ) {
+
+                    transcript +=
+                        event.results[i][0].transcript;
+
+                }
+
+                output.value = transcript;
+
+            };
+
+
+            recognition.onerror = function (event) {
+
+                status.textContent =
+                    "Error: " + event.error;
+
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+
+            };
+
+
+            recognition.onend = function () {
+
+                status.textContent =
+                    "Recording stopped.";
+
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+
+            };
+
+
+            startBtn.addEventListener("click", function () {
+
+                recognition.start();
+
+            });
+
+
+            stopBtn.addEventListener("click", function () {
+
+                recognition.stop();
+
+            });
+
+        }
+
+
+        clearBtn.addEventListener("click", function () {
+
+            output.value = "";
+
+            status.textContent =
+                "Text cleared. Ready to record.";
+
+        });
+
+    </script>
+
+</body>
+
+</html>
